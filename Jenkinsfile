@@ -11,7 +11,12 @@ pipeline {
        sh './mvnw clean install'
       }
   	}
-  }
+stage('deploy to staging') {
+steps {
+  sh './bin/deploy_to_staging'
+}
+
+}
   options {
   timestamps()
   skipDefaultCheckout()
