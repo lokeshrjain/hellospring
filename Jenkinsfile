@@ -13,9 +13,9 @@ pipeline {
   	}
 stage('deploy to staging') {
 steps {
-  sh './bin/deploy_to_staging'
+sh './bin/deploy_to_staging'
 }
-
+}
 }
   options {
   timestamps()
