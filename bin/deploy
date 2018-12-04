@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+#
+# DESCRIPTION: ECS Deployment Script
+# MAINTAINER: Justin Kulesza <justin.kulesza@atomicobject.com
+# DEPENDENCIES: bash (>= 4.4.12), python (~> 2.7.13), awscli (~> 1.11.91), docker-ce (>= 17.03.1)
+# FROM: https://github.com/atomicobject/ecs-deployment
+#
+
+set -e
+
+# BEGIN CUSTOMIZATIONS #
+ECS_REGION='us-west-2'
+ECS_CLUSTER_NAME='shopalitic-ecs-cluster'
+ECS_SERVICE_NAME='hellospring'
+ECS_TASK_DEFINITION_NAME='hellospring'
+ECR_NAME='shopalitic/hellospring'
+ECR_URI='132522811272.dkr.ecr.us-west-2.amazonaws.com'
+VERSION=$(date +%s)
+AWSCLI_VER_TAR=1.11.91
+# END CUSTOMIZATIONS #
+
+# BEGIN OTHER VAR DEFINITIONS #
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ORIGINAL_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+ENVIRONMENT=""
+BRANCH=""
+AWSCLI_VER=$(aws --version 2>&1 | cut -d ' ' -f 1 | cut -d '/' -f 2)
+# END OTHER VAR DEFINITIONS #
+
+if [[ ${AWSCLI_VER} < ${AWSCLI_VER_TAR} ]]
+then echo "ERROR: Please upgrade your AWS CLI to version ${AWSCLI_VER_TAR} or later!"
+  exit 1
+fi
+
+
+usage() {
+  echo "Usage: $0 -e <environment> [-b <branch>]"
+  echo " <environment> must be either 'staging' or 'production'"
+  echo " <branch> must be a valid ref. If no branch is provided, you will be prompted for one."
+  exit 1
+}
+
+while getopts ":e:b:h" o; do
+    case "${o}" in
+        e)
+            ENVIRONMENT=${OPTARG}
+            (("${ENVIRONMENT}" == "staging" || "${ENVIRONMENT}" == "production")) || usage
+            ;;
+        b)
+            BRANCH=${OPTARG}
+            git rev-parse --abbrev-ref "${BRANCH}" || usage
+            ;;
+        *)
+            usage
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+
+if [[ -z "${ENVIRONMENT}" ]] ; then
+    usage
+fi
+
+if [[ -z "${BRANCH}" ]] ; then
+  echo -n "Which branch to deploy from [$(git rev-parse --abbrev-ref HEAD)] ? "
+  read -r line
+  if [[ -z "${line}" ]]; then
+    BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+  else
+    git rev-parse --abbrev-ref "${line}" || exit 1
+    BRANCH="${line}"
+  fi
+fi
+
+echo "You are deploying ${BRANCH} to ${ENVIRONMENT}."
+
+# Git operations
+(
+  cd "${DIR}/.."
+
+  # Fetch latest from git origin
+  git fetch --all
+
+  # Checkout the git branch
+  git checkout "${BRANCH}"
+)
+
+
+# Docker operations
+(
+  cd "${DIR}/.."
+
+  # Build the Docker image (to do asset and template compilation, etc.)
+  docker build --pull -t "${ECR_NAME}:latest" -f ./docker/Dockerfile .
+
+  # Tag the new Docker image to the remote repo (by date)
+  docker tag "${ECR_NAME}:latest" "${ECR_URI}/${ECR_NAME}:${ENVIRONMENT}-${VERSION}"
+
+  # Tag the new Docker staging image to the remote repo (by 'latest-${ENVIRONMENT}')
+  docker tag "${ECR_NAME}:latest" "${ECR_URI}/${ECR_NAME}:latest-${ENVIRONMENT}"
+
+  # Login to ECR
+  $(aws ecr get-login --no-include-email --region "${ECS_REGION}")
+
+  # Push to the remote repo (by date)
+  docker push "${ECR_URI}/${ECR_NAME}:${ENVIRONMENT}-${VERSION}"
+
+
+  # Push to the remote repo (by 'latest-staging')
+  docker push "${ECR_URI}/${ECR_NAME}:latest-${ENVIRONMENT}"
+)
+
+# ECS operations
+(
+  cd "${DIR}/.."
+
+  # Store revision
+  REVISION=$(git rev-parse "${BRANCH}")
+
+  ## Build & deploy ECS task definition
+  ## Deploy task and update service
+  ./bin/register_and_deploy_taskdef.sh > taskDef.json
+
+  aws ecs register-task-definition --cli-input-json file://taskDef.json
+
+  SERVICE_NAME=$(aws ecs describe-services --service "${ECS_SERVICE_NAME}" --cluster "${ECS_CLUSTER_NAME}" | grep "reason" | cut -d':' -f2- | tr -d '"')
+  echo  $SERVICE_NAME
+  if [[ $SERVICE_NAME == 'MISSING' ]]; then
+    # create the service to use the new task defintion
+    #aws ecs create-service --region "${ECS_REGION}" --cluster "${ECS_CLUSTER_NAME}" --service "${ECS_SERVICE_NAME}"  --task-definition "${ECS_TASK_DEFINITION_NAME}" --load-balancers loadBalancerName=elb-staging-1985465812,containerName=hellospring,containerPort=8081 --role ecs-service-role --desired-count 1
+  else
+    # Update the service to use the new task defintion
+    aws ecs update-service --region "${ECS_REGION}" --cluster "${ECS_CLUSTER_NAME}" --service "${ECS_SERVICE_NAME}"  --task-definition "${ECS_TASK_DEFINITION_NAME}"
+  fi
+
+
+)
+
