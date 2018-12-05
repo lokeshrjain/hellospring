@@ -80,12 +80,10 @@ echo "You are deploying ${BRANCH} to ${ENVIRONMENT}."
   cd "${DIR}/.."
 
   # Fetch latest from git origin
-  git fetch --all
+  git fetch --all && git pull
 
   # Checkout the git branch
   git checkout "${BRANCH}"
-
-  git pull
 )
 
 
