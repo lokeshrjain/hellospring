@@ -92,23 +92,23 @@ echo "You are deploying ${BRANCH} to ${ENVIRONMENT}."
   cd "${DIR}/.."
 
   # Build the Docker image (to do asset and template compilation, etc.)
-  docker build --pull -t "${ECR_NAME}:latest" -f ./docker/Dockerfile .
+  sudo docker build --pull -t "${ECR_NAME}:latest" -f ./docker/Dockerfile .
 
   # Tag the new Docker image to the remote repo (by date)
-  docker tag "${ECR_NAME}:latest" "${ECR_URI}/${ECR_NAME}:${ENVIRONMENT}-${VERSION}"
+  sudo docker tag "${ECR_NAME}:latest" "${ECR_URI}/${ECR_NAME}:${ENVIRONMENT}-${VERSION}"
 
   # Tag the new Docker staging image to the remote repo (by 'latest-${ENVIRONMENT}')
-  docker tag "${ECR_NAME}:latest" "${ECR_URI}/${ECR_NAME}:latest-${ENVIRONMENT}"
+  sudo docker tag "${ECR_NAME}:latest" "${ECR_URI}/${ECR_NAME}:latest-${ENVIRONMENT}"
 
   # Login to ECR
   $(aws ecr get-login --no-include-email --region "${ECS_REGION}")
 
   # Push to the remote repo (by date)
-  docker push "${ECR_URI}/${ECR_NAME}:${ENVIRONMENT}-${VERSION}"
+  sudo docker push "${ECR_URI}/${ECR_NAME}:${ENVIRONMENT}-${VERSION}"
 
 
   # Push to the remote repo (by 'latest-staging')
-  docker push "${ECR_URI}/${ECR_NAME}:latest-${ENVIRONMENT}"
+  sudo docker push "${ECR_URI}/${ECR_NAME}:latest-${ENVIRONMENT}"
 )
 
 # ECS operations
