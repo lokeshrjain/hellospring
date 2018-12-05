@@ -84,6 +84,8 @@ echo "You are deploying ${BRANCH} to ${ENVIRONMENT}."
 
   # Checkout the git branch
   git checkout "${BRANCH}"
+
+  git pull
 )
 
 
@@ -105,7 +107,6 @@ echo "You are deploying ${BRANCH} to ${ENVIRONMENT}."
 
   # Push to the remote repo (by date)
   sudo docker push "${ECR_URI}/${ECR_NAME}:${ENVIRONMENT}-${VERSION}"
-
 
   # Push to the remote repo (by 'latest-staging')
   sudo docker push "${ECR_URI}/${ECR_NAME}:latest-${ENVIRONMENT}"
