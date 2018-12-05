@@ -76,15 +76,15 @@ fi
 echo "You are deploying ${BRANCH} to ${ENVIRONMENT}."
 
 # Git operations
-(
-  cd "${DIR}/.."
+#(
+#  cd "${DIR}/.."
 
-  # Fetch latest from git origin
-  git fetch --all && git pull
+#  # Fetch latest from git origin
+#  git fetch --all && git pull
 
-  # Checkout the git branch
-  git checkout "${BRANCH}"
-)
+#  # Checkout the git branch
+#  git checkout "${BRANCH}"
+#)
 
 
 # Docker operations
