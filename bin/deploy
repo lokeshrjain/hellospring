@@ -48,7 +48,8 @@ while getopts ":e:b:h" o; do
             ;;
         b)
             BRANCH=${OPTARG}
-            git rev-parse --abbrev-ref "${BRANCH}" || usage
+            echo ${BRANCH}
+            #git rev-parse --abbrev-ref "${BRANCH}" || usage
             ;;
         *)
             usage
