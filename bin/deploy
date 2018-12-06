@@ -103,6 +103,7 @@ echo "You are deploying ${BRANCH} to ${ENVIRONMENT}."
   # Login to ECR
   $(aws ecr get-login --no-include-email --region "${ECS_REGION}")
 
+  echo "here!!!"
   # Push to the remote repo (by date)
   sudo docker push "${ECR_URI}/${ECR_NAME}:${ENVIRONMENT}-${VERSION}"
 
