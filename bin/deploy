@@ -101,7 +101,7 @@ echo "You are deploying ${BRANCH} to ${ENVIRONMENT}."
   sudo docker tag "${ECR_NAME}:latest" "${ECR_URI}/${ECR_NAME}:latest-${ENVIRONMENT}"
 
   # Login to ECR
-  $(aws ecr get-login --no-include-email --region "${ECS_REGION}")
+  $(sudo aws ecr get-login --no-include-email --region "${ECS_REGION}")
 
   echo "here!!!"
   # Push to the remote repo (by date)
@@ -133,7 +133,6 @@ echo "You are deploying ${BRANCH} to ${ENVIRONMENT}."
     # Update the service to use the new task defintion
     aws ecs update-service --region "${ECS_REGION}" --cluster "${ECS_CLUSTER_NAME}" --service "${ECS_SERVICE_NAME}"  --task-definition "${ECS_TASK_DEFINITION_NAME}"
   fi
-
 
 )
 
