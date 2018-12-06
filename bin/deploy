@@ -92,23 +92,22 @@ echo "You are deploying ${BRANCH} to ${ENVIRONMENT}."
   cd "${DIR}/.."
 
   # Build the Docker image (to do asset and template compilation, etc.)
-  sudo docker build --pull -t "${ECR_NAME}:latest" -f ./docker/Dockerfile .
+  docker build --pull -t "${ECR_NAME}:latest" -f ./docker/Dockerfile .
 
   # Tag the new Docker image to the remote repo (by date)
-  sudo docker tag "${ECR_NAME}:latest" "${ECR_URI}/${ECR_NAME}:${ENVIRONMENT}-${VERSION}"
+  docker tag "${ECR_NAME}:latest" "${ECR_URI}/${ECR_NAME}:${ENVIRONMENT}-${VERSION}"
 
   # Tag the new Docker staging image to the remote repo (by 'latest-${ENVIRONMENT}')
-  sudo docker tag "${ECR_NAME}:latest" "${ECR_URI}/${ECR_NAME}:latest-${ENVIRONMENT}"
-  echo "here before!!!"
-  # Login to ECR
-  $(sudo aws ecr get-login --no-include-email --region "${ECS_REGION}")
+  docker tag "${ECR_NAME}:latest" "${ECR_URI}/${ECR_NAME}:latest-${ENVIRONMENT}"
 
-  echo "here!!!"
+  # Login to ECR
+  $(aws ecr get-login --no-include-email --region "${ECS_REGION}")
+
   # Push to the remote repo (by date)
-  sudo docker push "${ECR_URI}/${ECR_NAME}:${ENVIRONMENT}-${VERSION}"
+  docker push "${ECR_URI}/${ECR_NAME}:${ENVIRONMENT}-${VERSION}"
 
   # Push to the remote repo (by 'latest-staging')
-  sudo docker push "${ECR_URI}/${ECR_NAME}:latest-${ENVIRONMENT}"
+  docker push "${ECR_URI}/${ECR_NAME}:latest-${ENVIRONMENT}"
 )
 
 # ECS operations
@@ -127,6 +126,7 @@ echo "You are deploying ${BRANCH} to ${ENVIRONMENT}."
   SERVICE_NAME=$(aws ecs describe-services --service "${ECS_SERVICE_NAME}" --cluster "${ECS_CLUSTER_NAME}" | grep "reason" | cut -d':' -f2- | tr -d '"')
   echo  $SERVICE_NAME
   if [[ $SERVICE_NAME == 'MISSING' ]]; then
+    echo "you need to create service once!"
     # create the service to use the new task defintion
     #aws ecs create-service --region "${ECS_REGION}" --cluster "${ECS_CLUSTER_NAME}" --service "${ECS_SERVICE_NAME}"  --task-definition "${ECS_TASK_DEFINITION_NAME}" --load-balancers loadBalancerName=elb-staging-1985465812,containerName=hellospring,containerPort=8081 --role ecs-service-role --desired-count 1
   else
