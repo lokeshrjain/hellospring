@@ -99,7 +99,7 @@ echo "You are deploying ${BRANCH} to ${ENVIRONMENT}."
 
   # Tag the new Docker staging image to the remote repo (by 'latest-${ENVIRONMENT}')
   sudo docker tag "${ECR_NAME}:latest" "${ECR_URI}/${ECR_NAME}:latest-${ENVIRONMENT}"
-
+  echo "here before!!!"
   # Login to ECR
   $(sudo aws ecr get-login --no-include-email --region "${ECS_REGION}")
 
