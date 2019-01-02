@@ -10,7 +10,7 @@ set -e
 
 # BEGIN CUSTOMIZATIONS #
 ECS_REGION='us-west-2'
-ECS_CLUSTER_NAME='shopalitic-ecs-cluster'
+ECS_CLUSTER_NAME='ecs-cluster-Cluster-1YS2SFQZ5KKI'
 ECS_SERVICE_NAME='hellospring'
 ECS_TASK_DEFINITION_NAME='hellospring'
 ECR_NAME='shopalitic/hellospring'
@@ -49,7 +49,7 @@ while getopts ":e:b:h" o; do
         b)
             BRANCH=${OPTARG}
             echo ${BRANCH}
-            #git rev-parse --abbrev-ref "${BRANCH}" || usage
+            git rev-parse --abbrev-ref "${BRANCH}" || usage
             ;;
         *)
             usage
@@ -74,18 +74,6 @@ if [[ -z "${BRANCH}" ]] ; then
 fi
 
 echo "You are deploying ${BRANCH} to ${ENVIRONMENT}."
-
-# Git operations
-#(
-#  cd "${DIR}/.."
-
-#  # Fetch latest from git origin
-#  git fetch --all && git pull
-
-#  # Checkout the git branch
-#  git checkout "${BRANCH}"
-#)
-
 
 # Docker operations
 (
@@ -125,10 +113,10 @@ echo "You are deploying ${BRANCH} to ${ENVIRONMENT}."
 
   SERVICE_NAME=$(aws ecs describe-services --service "${ECS_SERVICE_NAME}" --cluster "${ECS_CLUSTER_NAME}" | grep "reason" | cut -d':' -f2- | tr -d '"')
   echo  $SERVICE_NAME
-  if [[ $SERVICE_NAME == 'MISSING' ]]; then
+  if [ $SERVICE_NAME == "MISSING" ]; then
     echo "you need to create service once!"
     # create the service to use the new task defintion
-    #aws ecs create-service --region "${ECS_REGION}" --cluster "${ECS_CLUSTER_NAME}" --service "${ECS_SERVICE_NAME}"  --task-definition "${ECS_TASK_DEFINITION_NAME}" --load-balancers loadBalancerName=elb-staging-1985465812,containerName=hellospring,containerPort=8081 --role ecs-service-role --desired-count 1
+    echo aws ecs create-service --region "${ECS_REGION}" --cluster "${ECS_CLUSTER_NAME}" --service "${ECS_SERVICE_NAME}"  --task-definition "${ECS_TASK_DEFINITION_NAME}" --load-balancers loadBalancerName=elb-staging-1985465812,containerName=hellospring,containerPort=8081 --role ecs-service-role --desired-count 1
   else
     # Update the service to use the new task defintion
     aws ecs update-service --region "${ECS_REGION}" --cluster "${ECS_CLUSTER_NAME}" --service "${ECS_SERVICE_NAME}"  --task-definition "${ECS_TASK_DEFINITION_NAME}"
