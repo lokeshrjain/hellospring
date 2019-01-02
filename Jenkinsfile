@@ -8,7 +8,7 @@ pipeline {
     }
   	stage('Build and Test') {
   	  steps {
-       sh './mvnw clean install'
+       sh './mvnw clean install -DskipTests=true'
       }
   	}
   stage('deploy to staging') {
