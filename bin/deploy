@@ -104,13 +104,13 @@ echo "You are deploying ${BRANCH} to ${ENVIRONMENT}."
 
   # Store revision
   REVISION=$(git rev-parse "${BRANCH}")
-
+  echo "revision:::$REVISION"
   ## Build & deploy ECS task definition
   ## Deploy task and update service
   ./bin/register_and_deploy_taskdef.sh > taskDef.json
 
   aws ecs register-task-definition --cli-input-json file://taskDef.json
-
+  echo "ECS_REGION ::: ${ECS_REGION}"
   SERVICE_NAME=$(aws ecs describe-services --service "${ECS_SERVICE_NAME}" --cluster "${ECS_CLUSTER_NAME}" | grep "reason" | cut -d':' -f2- | tr -d '"')
   echo  $SERVICE_NAME
   if [ $SERVICE_NAME == "MISSING" ]; then
