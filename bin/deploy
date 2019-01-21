@@ -11,7 +11,9 @@ set -e
 # BEGIN CUSTOMIZATIONS #
 ECS_REGION='us-west-2'
 ECS_CLUSTER_NAME='ecs-cluster-Cluster-1YS2SFQZ5KKI'
+ECS_LOAD_BALANCER_NAME='ecs-c-LoadB-C68ATIIZJX04'
 ECS_SERVICE_NAME='hellospring'
+VPC_ID=vpc-0b7a9fdcc7915b67d
 ECS_TASK_DEFINITION_NAME='hellospring'
 ECR_NAME='shopalitic/hellospring'
 ECR_URI='132522811272.dkr.ecr.us-west-2.amazonaws.com'
@@ -119,8 +121,8 @@ echo "You are deploying ${BRANCH} to ${ENVIRONMENT}."
     aws ecs create-service --region "${ECS_REGION}" --cluster "${ECS_CLUSTER_NAME}" --service "${ECS_SERVICE_NAME}"  --task-definition "${ECS_TASK_DEFINITION_NAME}" --load-balancers loadBalancerName=elb-staging-1985465812,containerName=hellospring,containerPort=8081 --role ecsServiceRole --desired-count 1
   else
     # Update the service to use the new task defintion
-    aws ecs update-service --region "${ECS_REGION}" --cluster "${ECS_CLUSTER_NAME}" --service "${ECS_SERVICE_NAME}"  --task-definition "${ECS_TASK_DEFINITION_NAME}"
+    # aws ecs update-service --region "${ECS_REGION}" --cluster "${ECS_CLUSTER_NAME}" --service "${ECS_SERVICE_NAME}"  --task-definition "${ECS_TASK_DEFINITION_NAME}"
+    python3 createService.py --task-count 1 --task-family-name ${ECS_TASK_DEFINITION_NAME} --load-balancer-name "${ECS_LOAD_BALANCER_NAME}" --service-protocol HTTP --service-port 8081  --service-container ${ECS_TASK_DEFINITION_NAME} --vpc_id ${VPC_ID} --ecs_service_role ecsServiceRole --cluster-name ${ECS_CLUSTER_NAME} --service-name "${ECS_SERVICE_NAME}"
   fi
-
 )
 
