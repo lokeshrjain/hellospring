@@ -12,6 +12,12 @@ pipeline {
       }
   	}
   stage('deploy to staging') {
+    environment {
+      AWS_ACCESS_KEY_ID = credentials('jenkins-aws-secret-key-id')
+      AWS_SECRET_ACCESS_KEY = credentials('jenkins-aws-secret-access-key')
+      DEPLOYMENT = 'staging'
+      AWS_DEFAULT_REGION = 'us-west-2'
+    }
     steps {
       sh './bin/deploy_to_staging'
     }
