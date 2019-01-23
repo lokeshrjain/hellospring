@@ -118,11 +118,11 @@ echo "You are deploying ${BRANCH} to ${ENVIRONMENT}."
   if [ $SERVICE_NAME == "MISSING" ]; then
     echo "you need to create service once!"
     # create the service to use the new task defintion
-    aws ecs create-service --region "${ECS_REGION}" --cluster "${ECS_CLUSTER_NAME}" --service "${ECS_SERVICE_NAME}"  --task-definition "${ECS_TASK_DEFINITION_NAME}" --load-balancers loadBalancerName=elb-staging-1985465812,containerName=hellospring,containerPort=8081 --role ecsServiceRole --desired-count 1
+    # aws ecs create-service --region "${ECS_REGION}" --cluster "${ECS_CLUSTER_NAME}" --service "${ECS_SERVICE_NAME}"  --task-definition "${ECS_TASK_DEFINITION_NAME}" --load-balancers loadBalancerName=elb-staging-1985465812,containerName=hellospring,containerPort=8081 --role ecsServiceRole --desired-count 1
+    python3 createService.py --task-count 1 --task-family-name ${ECS_TASK_DEFINITION_NAME} --load-balancer-name "${ECS_LOAD_BALANCER_NAME}" --service-protocol HTTP --service-port 8081  --service-container ${ECS_TASK_DEFINITION_NAME} --vpc_id ${VPC_ID} --ecs_service_role ecsServiceRole --cluster-name ${ECS_CLUSTER_NAME} --service-name "${ECS_SERVICE_NAME}"
   else
     # Update the service to use the new task defintion
-    # aws ecs update-service --region "${ECS_REGION}" --cluster "${ECS_CLUSTER_NAME}" --service "${ECS_SERVICE_NAME}"  --task-definition "${ECS_TASK_DEFINITION_NAME}"
-    python3 createService.py --task-count 1 --task-family-name ${ECS_TASK_DEFINITION_NAME} --load-balancer-name "${ECS_LOAD_BALANCER_NAME}" --service-protocol HTTP --service-port 8081  --service-container ${ECS_TASK_DEFINITION_NAME} --vpc_id ${VPC_ID} --ecs_service_role ecsServiceRole --cluster-name ${ECS_CLUSTER_NAME} --service-name "${ECS_SERVICE_NAME}"
+    aws ecs update-service --region "${ECS_REGION}" --cluster "${ECS_CLUSTER_NAME}" --service "${ECS_SERVICE_NAME}"  --task-definition "${ECS_TASK_DEFINITION_NAME}"
   fi
 )
 
