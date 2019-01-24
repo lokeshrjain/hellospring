@@ -19,6 +19,8 @@ pipeline {
       AWS_DEFAULT_REGION = 'us-west-2'
     }
     steps {
+      sh 'aws s3 cp s3://shopalitic-config/deploymentScripts ./bin --recursive'
+      sh 'chmod a+x ./bin/*'
       sh './bin/deploy_to_staging'
     }
   }

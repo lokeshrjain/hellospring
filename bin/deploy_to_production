@@ -2,9 +2,13 @@
 
 set -e
 
+ECS_SERVICE_NAME='hellospring'
+ECS_TASK_DEFINITION_NAME='hellospring'
+ECR_NAME='shopalitic/hellospring'
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 (
   cd "${DIR}/.."
-  ./bin/deploy -e production -b master
+  ./bin/deploy -e production -b master -s ${ECS_SERVICE_NAME} -t ${ECS_TASK_DEFINITION_NAME} -r ${ECR_NAME}
 )

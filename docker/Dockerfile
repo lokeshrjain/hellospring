@@ -56,7 +56,7 @@ RUN cd /tmp/ && \
     yes |cp -v /tmp/UnlimitedJCEPolicyJDK8/*.jar ${JAVA_HOME}/jre/lib/security/
 
 # Define commonly used JAVA_HOME variable
-ENV JAVA_HOME /usr/lib/jvm/java-8-oracle
+# ENV JAVA_HOME /usr/lib/jvm/java-8-oracle
 
 # Create the home dir
 RUN mkdir -p /opt/shopalitic/home
