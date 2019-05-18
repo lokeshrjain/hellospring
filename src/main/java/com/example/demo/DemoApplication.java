@@ -13,6 +13,7 @@ public class DemoApplication {
 		return "Hello World!";
 	}
 
+
 	@RequestMapping("/health")
 	String health() {
 		return "up!";
